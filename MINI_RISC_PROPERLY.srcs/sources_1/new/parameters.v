@@ -1,19 +1,23 @@
-parameter ADD = 5'b00000; 
-parameter MUL = 5'b00001; 
-parameter SUB = 5'b00010; 
-parameter DIV = 5'b00011; 
-parameter NOT = 5'b00100; 
-parameter AND = 5'b00101; 
-parameter OR  = 5'b00110; 
-parameter XOR = 5'b00111; 
-parameter INC = 5'b01000; 
-parameter CMP = 5'b01001; 
-parameter RR  = 5'b01010; 
-parameter RL  = 5'b01011; 
+parameter ADD = 5'b00000;
+parameter MUL = 5'b00001;
+parameter SUB = 5'b00010;
+parameter DIV = 5'b00011;
+parameter NOT = 5'b00100;
+parameter AND = 5'b00101;
+parameter OR = 5'b00110;
+parameter XOR = 5'b00111;
+parameter INC = 5'b01000;
+parameter CMP = 5'b01001;
+parameter RR = 5'b01010;
+parameter RL = 5'b01011;
 parameter SETB = 5'b01100;
 parameter CLRB = 5'b01101;
 parameter SETF = 5'b01110;
 
+parameter ADDR_WIDTH = 11;  // adress is 11 bits
+parameter DATA_WIDTH = 16;  // data is 16 bits
+// 4Kb memory with 16 bit word size implies 2048 words (2^11)
+parameter MEMORY_DEPTH = 2 ** ADDR_WIDTH;
 
 parameter REG0 = 3'b000;
 parameter REG1 = 3'b001;
