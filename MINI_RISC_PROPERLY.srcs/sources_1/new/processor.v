@@ -90,7 +90,7 @@ module processor;
      .clk(clk),
      .rst(rst),
      .inc(1'b1),
-     .branch_en(0),  // TODO
+     .branch_en(1'b0),  // TODO
      .branch_addr(branch_reg),
      .current_addr(instruction_addr)
   );
@@ -103,7 +103,7 @@ module processor;
       .read_addr_0(reg_sel_read_0),
       .read_addr_1(reg_sel_read_1),
       .reg_write_addr_0(reg_sel_write_0),
-      .reg_write_addr_1(3'bXXX), //TODO
+      .reg_write_addr_1(3'bxxx), //TODO
       .data_in_0(reg_file_data_in_0), //TODO
       .data_in_1(16'bX), //TODO
       .read_data_0(reg_file_out_0),
@@ -112,8 +112,12 @@ module processor;
 
 
 
-  // reg_file_data_in_0
   always @(posedge clk) begin
+   reg_file_write_en_0 = 2'b00;
+   reg_file_data_in_0 = 16'bx;
+
+      if (opcode == HALT) $finish;
+
     if (Immediate_control) begin
       if (opcode == LBL) begin
        reg_file_write_en_0 = 2'b01;
@@ -121,9 +125,11 @@ module processor;
       end else if (opcode == LBH) begin
        reg_file_write_en_0 = 2'b10;
        reg_file_data_in_0 = {immediate_byte, 8'b0};
-      end else begin
-        $fatal;
-      end
+      end else $fatal;
+    end
+    if (opcode == MOV) begin 
+      reg_file_write_en_0 = 2'b11;
+      reg_file_data_in_0 = reg_file_out_0;
     end
   end
 
@@ -149,12 +155,9 @@ module processor;
 
   // Test block
   initial begin
-    load_test_2;
+    mov_test_1;
     reset;
-    #100 $display("finished!");
-    $finish;
   end
-
 
   task reset;
     begin
@@ -165,28 +168,47 @@ module processor;
     rst = 0;
     @(posedge clk);
     end
-
   endtask
 
   task load_test_1;
     begin
+      $display("load test 1");
       instruction_mem[0] = {LBL, REG0, 8'hFF};
       instruction_mem[1] = {LBL, REG1, 8'hFF};
       instruction_mem[2] = {LBL, REG2, 8'hFF};
       instruction_mem[3] = {LBH, REG0, 8'hFF};
       instruction_mem[4] = {LBH, REG1, 8'hFF};
       instruction_mem[5] = {LBH, REG2, 8'hFF};
+      instruction_mem[6] = {HALT, 11'bx};
     end
   endtask
 
   task load_test_2;
     begin
+      $display("load test 2");
       instruction_mem[0] = {LBL, REG0, 8'h01};
       instruction_mem[1] = {LBL, REG1, 8'h02};
       instruction_mem[2] = {LBL, REG2, 8'hF3};
       instruction_mem[3] = {LBH, REG0, 8'hF4};
       instruction_mem[4] = {LBH, REG1, 8'hF5};
       instruction_mem[5] = {LBH, REG2, 8'hF6};
+      instruction_mem[6] = {HALT, 11'bx};
+    end
+  endtask
+
+  task mov_test_1;
+    begin
+      $display("mov test 1");
+      instruction_mem[0] = {LBL, REG0, 8'h01};
+      instruction_mem[1] = {LBL, REG1, 8'h02};
+      instruction_mem[2] = {LBL, REG2, 8'hF3};
+      instruction_mem[3] = {LBH, REG0, 8'hF1};
+      instruction_mem[4] = {LBH, REG1, 8'hF2};
+      instruction_mem[5] = {LBH, REG2, 8'hF3};
+      instruction_mem[6] = {MOV, REG7, REG0, 5'bx};
+      instruction_mem[7] = {MOV, REG6, REG1, 5'bx};
+      instruction_mem[8] = {MOV, REG5, REG2, 5'bx};
+      instruction_mem[9] = {HALT, 11'bx};
     end
   endtask
   // task verify_reg_val;
