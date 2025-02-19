@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: 
+//Company: 
 // Engineer: 
 // 
 // Create Date: 13.02.2025 09:26:39
@@ -20,11 +20,11 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 module memory (
-    input clk,
-    input write_en,
-    input [ADDR_WIDTH-1:0] address,
-    input [DATA_WIDTH-1:0] data_in,
-    output [DATA_WIDTH-1:0] read_data
+    input wire clk,
+    input wire write_en,
+    input wire [ADDR_WIDTH-1:0] address,
+    input wire [DATA_WIDTH-1:0] data_in,
+    output wire [DATA_WIDTH-1:0] read_data
 );
   `include "parameters.v"
 
