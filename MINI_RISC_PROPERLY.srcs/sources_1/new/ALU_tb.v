@@ -18,8 +18,8 @@
 // Additional Comments:
 // 
 //////////////////////////////////////////////////////////////////////////////////
-
 module ALU_tb();
+    `include "parameters.v"
     // Inputs
     reg clk;
     reg [4:0] opcode;
@@ -68,53 +68,56 @@ module ALU_tb();
 			      input [15:0] test_op1; input [15:0] test_op2; input [3:0] test_bit_pos;) */
         // Test ADD operation
         // Normal addition
-        test_case("ADD - Normal", 5'b00000, 16'd10, 16'd20, 4'd0);
+        test_case("ADD - Normal", ADD, 16'd10, 16'd20, 4'd0);
         // Addition with carry
-        test_case("ADD - Carry", 5'b00000, 16'hFFFF, 16'd1, 4'd0);
+        test_case("ADD - Carry", ADD, 16'hFFFF, 16'd1, 4'd0);
         // Addition with overflow
-        test_case("ADD - Overflow", 5'b00000, 16'h7FFF, 16'h7FFF, 4'd0);
+        test_case("ADD - Overflow", ADD, 16'h7FFF, 16'h7FFF, 4'd0);
         
         // Test MUL operation
-        test_case("MUL - Normal", 5'b00001, 16'd10, 16'd20, 4'd0);
-        test_case("MUL - Large", 5'b00001, 16'hFFFF, 16'h2, 4'd0);
+        test_case("MUL - Normal", MUL, 16'd10, 16'd20, 4'd0);
+        test_case("MUL - Large", MUL, 16'hFFFF, 16'h2, 4'd0);
         
         // Test SUB operation
-        test_case("SUB - Normal", 5'b00010, 16'd20, 16'd10, 4'd0);
-        test_case("SUB - Negative", 5'b00010, 16'd40, 16'd29, 4'd0);
+        test_case("SUB - Normal", SUB, 16'd20, 16'd10, 4'd0);
+        test_case("SUB - Negative", SUB, 16'd40, 16'd29, 4'd0);
         
         // Test DIV operation
-        test_case("DIV - Normal", 5'b00011, 16'd20, 16'd5, 4'd0);
-        test_case("DIV - By Zero", 5'b00011, 16'd20, 16'd0, 4'd0);
+        test_case("DIV - Normal", DIV, 16'd20, 16'd5, 4'd0);
+        test_case("DIV - By Zero", DIV, 16'd20, 16'd0, 4'd0);
         
         // Test logical operations
-        test_case("NOT", 5'b00100, 16'hAAAA, 16'd0, 4'd0);
-        test_case("AND", 5'b00101, 16'hAAAA, 16'h5555, 4'd0);
-        test_case("OR", 5'b00110, 16'hAAAA, 16'h5555, 4'd0);
-        test_case("XOR", 5'b00111, 16'hAAAA, 16'h5555, 4'd0);
+        test_case("NOT", NOT, 16'hAAAA, 16'd0, 4'd0);
+        test_case("AND", AND, 16'hAAAA, 16'h5555, 4'd0);
+        test_case("OR", OR, 16'hAAAA, 16'h5555, 4'd0);
+        test_case("XOR", XOR, 16'hAAAA, 16'h5555, 4'd0);
         
         // Test INC operation
-        test_case("INC - Normal", 5'b01000, 16'd10, 16'd0, 4'd0);
-        test_case("INC - Overflow", 5'b01000, 16'hFFFF, 16'd0, 4'd0);
+        test_case("INC - Normal", INC, 16'd10, 16'd0, 4'd0);
+        test_case("INC - Overflow", INC, 16'hFFFF, 16'd0, 4'd0);
         
         // Test CMP operation
-        test_case("CMP - Equal", 5'b01001, 16'd10, 16'd10, 4'd0);
-        test_case("CMP - Greater", 5'b01001, 16'd20, 16'd10, 4'd0);
-        test_case("CMP - Less", 5'b01001, 16'd10, 16'd20, 4'd0);
+        test_case("CMP - Equal", CMP, 16'd10, 16'd10, 4'd0);
+        test_case("CMP - Greater", CMP, 16'd20, 16'd10, 4'd0);
+        test_case("CMP - Less", CMP, 16'd10, 16'd20, 4'd0);
         
         // Test rotation operations
-        test_case("RR", 5'b01010, 16'hAAAA, 16'd0, 4'd0);
-        test_case("RL", 5'b01011, 16'hAAAA, 16'd0, 4'd0);
+        test_case("RR", RR, 16'hAAAA, 16'd0, 4'd0);
+        test_case("RL", RL, 16'hAAAA, 16'd0, 4'd0);
         
         // Test bit operations
-        test_case("SETB", 5'b01100, 16'h0000, 16'd0, 4'd8);
-        test_case("CLRB", 5'b01101, 16'hFFFF, 16'd0, 4'd8);
-
+        test_case("SETB", SETB, 16'h0000, 16'd0, 4'd8);
+        test_case("CLRB", CLRB, 16'hFFFF, 16'd0, 4'd8);
+        test_case("CPLB", CPLB, 16'hFFFF, 16'd0, 4'd8);
         // Test setting different flag bits
-        test_case("SETF - Carry Flag", 5'b01110, 16'h0000, 16'h0000, 4'd0);
-        test_case("SETF - Zero Flag", 5'b01110, 16'h0000, 16'h0000, 4'd7);
-        test_case("SETF - Negative Flag", 5'b01110, 16'h0000, 16'h0000, 4'd6);
-        test_case("SETF - General Purpose Flag", 5'b01110, 16'h0000, 16'h0000, 4'd4);
+        test_case("SETF - Carry Flag", SETF, 16'h0000, 16'h0000, 4'd0);
+        test_case("SETF - Zero Flag", SETF, 16'h0000, 16'h0000, 4'd7);
+        test_case("SETF - Negative Flag", SETF, 16'h0000, 16'h0000, 4'd6);
+        test_case("SETF - General Purpose Flag", SETF, 16'h0000, 16'h0000, 4'd4);
         
+        test_case("CLRF - Carry Flag", CLRF, 16'h0000, 16'h0000, 4'd0);
+        test_case("CPLF - Carry Flag",  CPLF, 16'h0000, 16'h0000, 4'd0);
+
         $display("\n=== Test Summary ===");
         if (num_failures == 0)
             $display("All tests passed successfully!");
@@ -146,7 +149,7 @@ module ALU_tb();
             @(posedge clk);
             #1; // Wait for outputs to stabilize
             case(test_opcode)
-                5'b00000: begin // ADD
+                ADD: begin // ADD
                     if(result_0 !== test_op1 + test_op2) begin
                         failed = 1;
                         $display("\nFAILURE in %s:", test_name);
@@ -156,7 +159,7 @@ module ALU_tb();
                     end
                 end
                 
-                5'b00001: begin // MUL
+                MUL: begin // MUL
                     expected_mul = test_op1 * test_op2;
                     if(result_0 !== expected_mul[15:0] || result_1 !== expected_mul[31:16]) begin
                         failed = 1;
@@ -166,7 +169,7 @@ module ALU_tb();
                     end
                 end
                 
-                5'b00010: begin // SUB
+                SUB: begin // SUB
                     if(result_0 !== test_op1 - test_op2) begin
                         failed = 1;
                         $display("\nFAILURE in %s:", test_name);
@@ -176,7 +179,7 @@ module ALU_tb();
                     end
                 end
                 
-                5'b00011: begin // DIV
+                DIV: begin // DIV
                     if(test_op2 != 0) begin
                         expected_div = test_op1 / test_op2;
                         expected_mod = test_op1 % test_op2;
@@ -194,7 +197,7 @@ module ALU_tb();
                     end
                 end
                 
-                5'b00100: begin // NOT
+                NOT: begin // NOT
                     if(result_0 !== ~test_op1) begin
                         failed = 1;
                         $display("\nFAILURE in %s:", test_name);
@@ -203,7 +206,7 @@ module ALU_tb();
                     end
                 end
                 
-                5'b00101: begin // AND
+                AND: begin // AND
                     if(result_0 !== (test_op1 & test_op2)) begin
                         failed = 1;
                         $display("\nFAILURE in %s:", test_name);
@@ -212,7 +215,7 @@ module ALU_tb();
                     end
                 end
                 
-                5'b00110: begin // OR
+                OR: begin // OR
                     if(result_0 !== (test_op1 | test_op2)) begin
                         failed = 1;
                         $display("\nFAILURE in %s:", test_name);
@@ -221,7 +224,7 @@ module ALU_tb();
                     end
                 end
                 
-                5'b00111: begin // XOR
+                XOR: begin // XOR
                     if(result_0 !== (test_op1 ^ test_op2)) begin
                         failed = 1;
                         $display("\nFAILURE in %s:", test_name);
@@ -230,7 +233,7 @@ module ALU_tb();
                     end
                 end
                 
-                5'b01000: begin // INC
+                INC: begin // INC
                     if(result_0 !== test_op1 + 16'h0001) begin
                         failed = 1;
                         $display("\nFAILURE in %s:", test_name);
@@ -240,7 +243,7 @@ module ALU_tb();
                     end
                 end
                 
-                5'b01001: begin // CMP
+                CMP: begin // CMP
                     if((test_op1 == test_op2 && !flag_reg[3]) ||
                        (test_op1 > test_op2 && !flag_reg[2]) ||
                        (test_op1 < test_op2 && !flag_reg[0])) begin
@@ -255,7 +258,7 @@ module ALU_tb();
                     end
                 end
                 
-                5'b01010: begin // RR
+                RR: begin // RR
                     if(result_0 !== {test_op1[0], test_op1[15:1]}) begin
                         failed = 1;
                         $display("\nFAILURE in %s:", test_name);
@@ -264,7 +267,7 @@ module ALU_tb();
                     end
                 end
                 
-                5'b01011: begin // RL
+                RL: begin // RL
                     if(result_0 !== {test_op1[14:0], test_op1[15]}) begin
                         failed = 1;
                         $display("\nFAILURE in %s:", test_name);
@@ -273,7 +276,7 @@ module ALU_tb();
                     end
                 end
                 
-                5'b01100: begin // SETB
+                SETB: begin // SETB
                     if(result_0 !== (test_op1 | (16'b1 << test_bit_pos))) begin
                         failed = 1;
                         $display("\nFAILURE in %s:", test_name);
@@ -282,7 +285,7 @@ module ALU_tb();
                     end
                 end
                 
-                5'b01101: begin // CLRB
+                CLRB: begin // CLRB
                     if(result_0 !== (test_op1 & ~(16'b1 << test_bit_pos))) begin
                         failed = 1;
                         $display("\nFAILURE in %s:", test_name);
@@ -291,22 +294,37 @@ module ALU_tb();
                     end
                 end
                 
-                5'b01110: begin // SETF
+                CPLB: begin // CPLB
+                    if(result_0 !== (test_op1 ^ (16'b1 << test_bit_pos))) begin
+                      failed = 1;
+                      $display("\nFAILURE in %s:", test_name);
+                      $display("CPLB operation failed:");
+                      $display("Expected: %h, Got: %h", test_op1 ^ (16'b1 << test_bit_pos), result_0);
+                    end
+                end
+
+                SETF: begin // SETF
                     if(!flag_reg[test_bit_pos]) begin
                         failed = 1;
                         $display("\nFAILURE in %s:", test_name);
                         $display("SETF operation failed:");
                         $display("Flag bit %d not set", test_bit_pos);
                     end
+                    $display("Flag register: %h", flag_reg);
                 end
                 
-                5'b01111: begin // SWAP
-                    if(result_0 !== {test_op1[7:0], test_op1[15:8]}) begin
-                        failed = 1;
-                        $display("\nFAILURE in %s:", test_name);
-                        $display("SWAP operation failed:");
-                        $display("Expected: %h, Got: %h", {test_op1[7:0], test_op1[15:8]}, result_0);
-                    end
+                CLRF: begin
+                  if(flag_reg[test_bit_pos]) begin
+                    failed = 1;
+                    $display("\nFAILURE in %s:", test_name);
+                    $display("CLRF operation failed:");
+                    $display("Flag bit %d not cleared", test_bit_pos);
+                  end
+                  $display("Flag register: %h", flag_reg);
+                end
+
+                CPLF: begin // doing manual check for this command
+                    $display("Flag register %h:",flag_reg);
                 end
             endcase
             

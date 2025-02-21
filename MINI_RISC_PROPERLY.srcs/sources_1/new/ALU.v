@@ -16,7 +16,7 @@ flag_reg[0] : Carry Flag (C)
 flag_reg[1] : Overflow Flag (V)
 flag_reg[2] : Compare Flag (CMP)
 flag_reg[3] : Equal Flag (Eq)
-flag_reg[4] : General Purpose Flag (F)
+flag_reg[4] : IO Flag (IO)
 flag_reg[5] : Parity Flag (P) - Set when number of ones are even
 flag_reg[6] : Negative Flag (N)
 flag_reg[7] : Zero  Flag (Z)
@@ -146,8 +146,21 @@ flag_reg[7] : Zero  Flag (Z)
         result_0 = operand_1 & ~(16'b1 << bit_position);
         set_common_flags(result_0);
       end
+
+      CPLB: begin
+        result_0 = operand_1 ^ (16'b1 << bit_position);
+      end
+        
       SETF: begin
         flag_reg[bit_position] = 1'b1;
+      end
+
+      CLRF: begin
+        flag_reg[bit_position] = 1'b0;
+      end
+
+      CPLF: begin 
+        flag_reg[bit_position] = ~flag_reg[bit_position];
       end
       default: $display("No operation");
     endcase
