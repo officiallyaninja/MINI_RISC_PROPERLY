@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
-// Engineer: 
+// Engineer: Vasanthi 
 // 
 // Create Date: 13.02.2025 11:47:45
 // Design Name: 
@@ -21,7 +21,8 @@
 module ALU_tb();
     `include "parameters.v"
     // Inputs
-    reg clk;
+    reg clk;                    // Add clock
+    reg reset;
     reg [4:0] opcode;
     reg [15:0] operand_1;
     reg [15:0] operand_2;
@@ -30,36 +31,51 @@ module ALU_tb();
     // Outputs
     wire [15:0] result_0;
     wire [15:0] result_1;
-    wire [15:0] flag_reg;
+    wire [15:0] current_flags;  // Change to wire since it's now an output from Flag_Register
+    wire [15:0] next_flags;
    
-    ALU dut (
-        .clk(clk),
+    // Clock generation
+    initial begin
+        clk = 0;
+        forever #5 clk = ~clk;  // 100MHz clock
+    end
+
+    // Instantiate the ALU
+    ALU alu (
         .opcode(opcode),
         .operand_1(operand_1),
         .operand_2(operand_2),
         .bit_position(bit_position),
+        .current_flags(current_flags),
         .result_0(result_0),
         .result_1(result_1),
-        .flag_reg(flag_reg)
+        .next_flags(next_flags)
     );
-   
+
+    // Instantiate the Flag Register
+    Flag_Register flag_reg (
+        .clk(clk),
+        .reset(reset),
+        .next_flags(next_flags),
+        .current_flags(current_flags)
+    );
 
     integer num_failures;
-    // Clock generation
     initial begin
         num_failures = 0;
-        clk = 0;
-        forever #5 clk = ~clk;
     end
     
     // Test stimulus
     initial begin
         // Initialize inputs
+        clk = 0;
+        reset = 1;
         opcode = 0;
         operand_1 = 0;
         operand_2 = 0;
         bit_position = 0;
-        
+
+        #20 reset = 0;
         // Wait for 100 ns for global reset
         #100;
         
@@ -137,17 +153,15 @@ module ALU_tb();
         reg failed;
         reg [31:0] expected_mul;
         reg [15:0] expected_div, expected_mod;
+        
         begin
             failed = 0;
             $display("\nRunning test: %s", test_name);
-            @(negedge clk);
             opcode = test_opcode;
             operand_1 = test_op1;
             operand_2 = test_op2;
             bit_position = test_bit_pos;
-            
-            @(posedge clk);
-            #1; // Wait for outputs to stabilize
+            @(posedge clk);  // Wait for flag register to update
             case(test_opcode)
                 ADD: begin // ADD
                     if(result_0 !== test_op1 + test_op2) begin
@@ -155,8 +169,9 @@ module ALU_tb();
                         $display("\nFAILURE in %s:", test_name);
                         $display("ADD operation failed:");
                         $display("Expected: %h, Got: %h", test_op1 + test_op2, result_0);
-                        $display("Carry flag: %b", flag_reg[0]);
+                        $display("Carry flag: %b", next_flags[0]);
                     end
+                    $display("Flag register: %h", next_flags);
                 end
                 
                 MUL: begin // MUL
@@ -167,6 +182,7 @@ module ALU_tb();
                         $display("MUL operation failed:");
                         $display("Expected: %h%h, Got: %h%h", expected_mul[31:16], expected_mul[15:0], result_1, result_0);
                     end
+                    $display("Flag register: %h", next_flags);
                 end
                 
                 SUB: begin // SUB
@@ -175,8 +191,9 @@ module ALU_tb();
                         $display("\nFAILURE in %s:", test_name);
                         $display("SUB operation failed:");
                         $display("Expected: %h, Got: %h", test_op1 - test_op2, result_0);
-                        $display("Borrow flag: %b", flag_reg[0]);
+                        $display("Borrow flag: %b", next_flags[0]);
                     end
+                    $display("Flag register: %h", next_flags);
                 end
                 
                 DIV: begin // DIV
@@ -190,11 +207,12 @@ module ALU_tb();
                             $display("Expected quotient: %h, Got: %h", expected_div, result_0);
                             $display("Expected remainder: %h, Got: %h", expected_mod, result_1);
                         end
-                    end else if(result_0 !== 16'hFFFF || !flag_reg[1]) begin
+                    end else if(result_0 !== 16'hFFFF || !next_flags[1]) begin
                         failed = 1;
                         $display("\nFAILURE in %s:", test_name);
                         $display("DIV by zero handling failed");
                     end
+                    $display("Flag register: %h", next_flags);
                 end
                 
                 NOT: begin // NOT
@@ -204,6 +222,7 @@ module ALU_tb();
                         $display("NOT operation failed:");
                         $display("Expected: %h, Got: %h", ~test_op1, result_0);
                     end
+                    $display("Flag register: %h", next_flags);
                 end
                 
                 AND: begin // AND
@@ -213,6 +232,7 @@ module ALU_tb();
                         $display("AND operation failed:");
                         $display("Expected: %h, Got: %h", test_op1 & test_op2, result_0);
                     end
+                    $display("Flag register: %h", next_flags);
                 end
                 
                 OR: begin // OR
@@ -222,6 +242,7 @@ module ALU_tb();
                         $display("OR operation failed:");
                         $display("Expected: %h, Got: %h", test_op1 | test_op2, result_0);
                     end
+                    $display("Flag register: %h", next_flags);
                 end
                 
                 XOR: begin // XOR
@@ -231,6 +252,7 @@ module ALU_tb();
                         $display("XOR operation failed:");
                         $display("Expected: %h, Got: %h", test_op1 ^ test_op2, result_0);
                     end
+                    $display("Flag register: %h", next_flags);
                 end
                 
                 INC: begin // INC
@@ -239,14 +261,15 @@ module ALU_tb();
                         $display("\nFAILURE in %s:", test_name);
                         $display("INC operation failed:");
                         $display("Expected: %h, Got: %h", test_op1 + 16'h0001, result_0);
-                        $display("Overflow flag: %b", flag_reg[1]);
+                        $display("Overflow flag: %b", next_flags[1]);
                     end
+                    $display("Flag register: %h", next_flags);
                 end
                 
                 CMP: begin // CMP
-                    if((test_op1 == test_op2 && !flag_reg[3]) ||
-                       (test_op1 > test_op2 && !flag_reg[2]) ||
-                       (test_op1 < test_op2 && !flag_reg[0])) begin
+                    if((test_op1 == test_op2 && !next_flags[3]) ||
+                       (test_op1 > test_op2 && !next_flags[2]) ||
+                       (test_op1 < test_op2 && !next_flags[0])) begin
                         failed = 1;
                         $display("\nFAILURE in %s:", test_name);
                         $display("CMP flags incorrect:");
@@ -254,8 +277,9 @@ module ALU_tb();
                                test_op1 == test_op2,
                                test_op1 > test_op2,
                                test_op1 < test_op2);
-                        $display("Got flags: %b", flag_reg);
+                        $display("Got flags: %b", next_flags);
                     end
+                    $display("Flag register: %h", next_flags);
                 end
                 
                 RR: begin // RR
@@ -265,6 +289,7 @@ module ALU_tb();
                         $display("RR operation failed:");
                         $display("Expected: %h, Got: %h", {test_op1[0], test_op1[15:1]}, result_0);
                     end
+                    $display("Flag register: %h", next_flags);
                 end
                 
                 RL: begin // RL
@@ -274,6 +299,7 @@ module ALU_tb();
                         $display("RL operation failed:");
                         $display("Expected: %h, Got: %h", {test_op1[14:0], test_op1[15]}, result_0);
                     end
+                    $display("Flag register: %h", next_flags);
                 end
                 
                 SETB: begin // SETB
@@ -283,6 +309,7 @@ module ALU_tb();
                         $display("SETB operation failed:");
                         $display("Expected: %h, Got: %h", test_op1 | (16'b1 << test_bit_pos), result_0);
                     end
+                    $display("Flag register: %h", next_flags);
                 end
                 
                 CLRB: begin // CLRB
@@ -292,6 +319,7 @@ module ALU_tb();
                         $display("CLRB operation failed:");
                         $display("Expected: %h, Got: %h", test_op1 & ~(16'b1 << test_bit_pos), result_0);
                     end
+                    $display("Flag register: %h", next_flags);
                 end
                 
                 CPLB: begin // CPLB
@@ -301,30 +329,36 @@ module ALU_tb();
                       $display("CPLB operation failed:");
                       $display("Expected: %h, Got: %h", test_op1 ^ (16'b1 << test_bit_pos), result_0);
                     end
+                    $display("Flag register: %h", next_flags);
                 end
 
                 SETF: begin // SETF
-                    if(!flag_reg[test_bit_pos]) begin
+                    if(!next_flags[test_bit_pos]) begin
                         failed = 1;
                         $display("\nFAILURE in %s:", test_name);
                         $display("SETF operation failed:");
                         $display("Flag bit %d not set", test_bit_pos);
                     end
-                    $display("Flag register: %h", flag_reg);
+                    $display("Flag register: %h", next_flags);
                 end
                 
                 CLRF: begin
-                  if(flag_reg[test_bit_pos]) begin
+                  if(next_flags[test_bit_pos]) begin
                     failed = 1;
                     $display("\nFAILURE in %s:", test_name);
                     $display("CLRF operation failed:");
                     $display("Flag bit %d not cleared", test_bit_pos);
                   end
-                  $display("Flag register: %h", flag_reg);
+                  $display("Flag register: %h", next_flags);
                 end
 
-                CPLF: begin // doing manual check for this command
-                    $display("Flag register %h:",flag_reg);
+                CPLF: begin
+                    if(next_flags[test_bit_pos] === current_flags[test_bit_pos]) begin
+                        failed = 1;
+                        $display("\nFAILURE in %s:", test_name);
+                        $display("CPLF operation failed:");
+                        $display("Flag bit %d not complemented", test_bit_pos);
+                    end
                 end
             endcase
             
