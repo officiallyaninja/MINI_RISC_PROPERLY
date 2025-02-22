@@ -39,10 +39,10 @@ flag_reg[7] : Zero  Flag (Z)
     input [15:0] value;
     begin
 
-      flag_reg[7] <= (value == 16'b0);
+      flag_reg[7] = (value == 16'b0);
       //Note: 6 and 5 used to be = not <=
-      flag_reg[6] <= value[15];
-      flag_reg[5] <= parity(value);
+      flag_reg[6] = value[15];
+      flag_reg[5] = parity(value);
     end
   endtask
 

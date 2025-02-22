@@ -23,10 +23,13 @@
 module processor;
 
   `include "parameters.v"
+  // register that gets upper mul bits
+  // and the remainder of div
+  localparam ALU_EXTRA_OUTPUT_REG = 3'b001; 
   // special regs
   reg clk;
   reg rst;
-  reg [15:0] flag;
+  wire [15:0] flag;
   reg [15:0] instruction_mem[0:MEMORY_DEPTH-1];  // 11 bits to index
   reg [10:0] branch_reg;
 
@@ -38,51 +41,45 @@ module processor;
   wire [2:0] reg_sel_write_0;
   wire [2:0] reg_sel_read_0;
   wire [2:0] reg_sel_read_1;
- //wire [2:0] reg_sel_write_1
-
+  wire [3:0] bit_pos;
 
   // connections
   wire [15:0] reg_file_out_0;
   wire [15:0] reg_file_out_1;
+  wire [15:0] ram_out;
   wire [10:0] instruction_addr;
-
-  // assignemtents
-  assign immediate_byte = instruction_reg[7:0];
-  assign reg_sel_write_0 = instruction_reg[10:8];
-  assign reg_sel_read_0 = instruction_reg[7:5];
-  assign reg_sel_read_1 = instruction_reg[4:2];
- //assign reg_sel_write_1
-
-
-  assign instruction_reg = instruction_mem[instruction_addr];
-  assign opcode = instruction_reg[15:11];
-
+  wire [15:0] alu_result_0;
+  wire [15:0] alu_result_1;
 
   //MUXed
   reg [15:0] reg_file_data_in_0;
   reg [0:1] reg_file_write_en_0;
 
+  // assignemtents
+  assign instruction_reg = instruction_mem[instruction_addr];
+  assign opcode = instruction_reg[15:11];
+
+  assign immediate_byte = instruction_reg[7:0];
+  assign reg_sel_write_0 = instruction_reg[10:8];
+  assign reg_sel_read_0 = instruction_reg[7:5];
+  assign reg_sel_read_1 = instruction_reg[4:2];
+  assign bit_pos = instruction_reg[4:1];
+
+
+
+
+
+
 
 
   // control signals
-   wire Alu_control;
-   wire Alu_output_control;  // always 0 when alu is 0
-   wire Reg_bit_control;
-   wire Flag_control;
-   wire Ram_control;
-   wire Reg_control;
-   wire Immediate_control;
+   wire alu_output_control;
+   wire bit_control;
 
   control_unit cu (
     .clk(clk),
     .opcode(opcode),
-    .Alu(Alu_control),
-    .Alu_output(Alu_output_control),  // always 0 when alu is 0
-    .Reg_bit(Reg_bit_control),
-    .Flag(Flag_control),
-    .Ram(Ram_control),
-    .Reg(Reg_control),
-    .Immediate(Immediate_control)
+    .alu_output(alu_output_control)
  );
 
 
@@ -98,64 +95,82 @@ module processor;
   reg_file reg_file (
       .clk(clk),
       .rst(rst),
-      .write_en_0(reg_file_write_en_0), //TODO
-      .write_en_1(2'b00), //TODO
+      .write_en_0(reg_file_write_en_0),
+      .write_en_1((opcode == MUL) || (opcode == DIV) ? 2'b11 : 2'b00),
       .read_addr_0(reg_sel_read_0),
       .read_addr_1(reg_sel_read_1),
       .reg_write_addr_0(reg_sel_write_0),
-      .reg_write_addr_1(3'bxxx), //TODO
-      .data_in_0(reg_file_data_in_0), //TODO
-      .data_in_1(16'bX), //TODO
+      .reg_write_addr_1(ALU_EXTRA_OUTPUT_REG),
+      .data_in_0(reg_file_data_in_0),
+      .data_in_1(alu_result_1), 
       .read_data_0(reg_file_out_0),
       .read_data_1(reg_file_out_1)
   );
 
+
+   memory ram (
+     .clk(clk),
+     .write_en(opcode == STORE),
+     .address(reg_file_out_0),
+     .data_in(reg_file_out_1),
+     .read_data(ram_out) 
+   );
+
+
+   ALU alu (
+     .clk(clk),
+     .opcode(opcode),  
+     .operand_1(reg_file_out_0),  
+     .operand_2(reg_file_out_1), 
+     .bit_position(bit_pos),
+
+     .result_0(alu_result_0),  
+     .result_1(alu_result_1), 
+     .flag_reg(flag)
+   );
 
 
   always @(posedge clk) begin
    reg_file_write_en_0 = 2'b00;
    reg_file_data_in_0 = 16'bx;
 
-      if (opcode == HALT) $finish;
+    if (opcode == HALT) $finish; // TODO: also set inc to 0
 
-    if (Immediate_control) begin
-      if (opcode == LBL) begin
-       reg_file_write_en_0 = 2'b01;
-       reg_file_data_in_0 = {8'b0, immediate_byte};
-      end else if (opcode == LBH) begin
-       reg_file_write_en_0 = 2'b10;
-       reg_file_data_in_0 = {immediate_byte, 8'b0};
-      end else $fatal;
+    if (opcode == LOAD ) begin
+      reg_file_write_en_0 = 2'b11;
+      reg_file_data_in_0 = ram_out;
+    end
+
+    if (opcode == LBL) begin
+     reg_file_write_en_0 = 2'b01;
+     reg_file_data_in_0 = {8'b0, immediate_byte};
+    end
+    if (opcode == LBH) begin
+     reg_file_write_en_0 = 2'b10;
+     reg_file_data_in_0 = {immediate_byte, 8'b0};
     end
     if (opcode == MOV) begin 
       reg_file_write_en_0 = 2'b11;
       reg_file_data_in_0 = reg_file_out_0;
     end
+
+    if (alu_output_control) begin
+      reg_file_write_en_0 = 2'b11;
+      reg_file_data_in_0 = alu_result_0;
+    end
+
+  if (reg_file_write_en_0 != 2'b00 && reg_file_data_in_0 == 16'bx) $fatal;
+
   end
 
-  // // reg_file_write_en_0
-  // always @(posedge clk) begin
-  //   if (Immediate_control) begin
-  //     if (opcode == LBL) begin
-  //      reg_file_write_en_0 = 2'b01;
-  //     end else if (opcode == LBH) begin
-  //      reg_file_write_en_0 = 2'b10;
-  //     end else begin
-  //       $fatal;
-  //     end
-  //   end
-  // end
-
-  integer num_failures;
   initial begin
-    num_failures = 0;
     clk = 0;
     forever #5 clk = ~clk;
   end
 
   // Test block
   initial begin
-    mov_test_1;
+    alu_test_inc;
     reset;
   end
 
@@ -211,19 +226,36 @@ module processor;
       instruction_mem[9] = {HALT, 11'bx};
     end
   endtask
-  // task verify_reg_val;
-  //   input [2:0] reg_sel;
-  //   input [15:0] expected;
-  //   begin
-  //     reg_write_en <= 0;
-  //     read_addr_0  <= reg_sel;
-  //     read_addr_1  <= reg_sel;
-  //     @(posedge clk);
-  //     if (operand_1 !== expected) begin
-  //       num_failures <= num_failures + 1;
-  //       $display("expected %h, but got %h", expected, operand_1);
-  //     end
-  //   end
-  // endtask
+
+  task load_store_test;
+  begin
+  $display("load_store_test");
+    instruction_mem[0] = {LBH, REG0, 8'd1};
+    instruction_mem[1] = {LBL, REG0, 8'd1};
+    instruction_mem[2] = {LBH, REG1, 8'd255};
+    instruction_mem[3] = {LBL, REG1, 8'd255};
+    instruction_mem[4] = {LBH, REG2, 8'd2};
+    instruction_mem[5] = {LBL, REG2, 8'd2};
+    instruction_mem[6] = {STORE, 3'bx, REG2, REG1, 2'bx};
+    instruction_mem[7] = {LOAD, REG3, REG2, 5'bx};
+    instruction_mem[8] = {HALT, 11'bx};
+  end
+  endtask
+
+  task alu_test_inc;
+  begin
+  $display("alu_test_inc");
+    instruction_mem[0] = {LBH, REG0, 8'd255};      
+    instruction_mem[1] = {LBL, REG0, 8'd16};      
+    instruction_mem[2] = {INC, REG1, REG0, 5'bx};
+    instruction_mem[3] = {INC, REG2, REG1, 5'bx};
+    instruction_mem[4] = {INC, REG3, REG2, 5'bx};
+    instruction_mem[5] = {INC, REG4, REG3, 5'bx};
+    instruction_mem[6] = {INC, REG5, REG4, 5'bx};
+    instruction_mem[7] = {INC, REG6, REG5, 5'bx};
+    instruction_mem[8] = {INC, REG7, REG6, 5'bx};
+    instruction_mem[9] = {HALT, 11'bx};
+  end
+  endtask
 
 endmodule
