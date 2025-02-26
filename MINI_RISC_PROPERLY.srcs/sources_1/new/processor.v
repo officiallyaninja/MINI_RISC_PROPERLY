@@ -29,7 +29,7 @@ module processor;
   // special regs
   reg clk;
   reg rst;
-  wire [15:0] flag;
+  reg [15:0] flag;
   reg [15:0] instruction_mem[0:MEMORY_DEPTH-1];  // 11 bits to index
   reg [10:0] branch_reg;
 
@@ -50,6 +50,7 @@ module processor;
   wire [10:0] instruction_addr;
   wire [15:0] alu_result_0;
   wire [15:0] alu_result_1;
+  wire [15:0] alu_flag_out;
 
   //MUXed
   reg [15:0] reg_file_data_in_0;
@@ -118,7 +119,6 @@ module processor;
 
 
    ALU alu (
-     .clk(clk),
      .opcode(opcode),  
      .operand_1(reg_file_out_0),  
      .operand_2(reg_file_out_1), 
@@ -126,7 +126,8 @@ module processor;
 
      .result_0(alu_result_0),  
      .result_1(alu_result_1), 
-     .flag_reg(flag)
+     .current_flags(flag),
+     .next_flags(alu_flag_out)
    );
 
 
@@ -161,16 +162,16 @@ module processor;
 
   if (reg_file_write_en_0 != 2'b00 && reg_file_data_in_0 == 16'bx) $fatal;
 
+  flag = alu_flag_out;
   end
 
   initial begin
     clk = 0;
-    forever #5 clk = ~clk;
-  end
+    forever #5 clk = ~clk; end
 
   // Test block
   initial begin
-    alu_test_inc;
+    alu_test_mul;
     reset;
   end
 
@@ -255,6 +256,67 @@ module processor;
     instruction_mem[7] = {INC, REG6, REG5, 5'bx};
     instruction_mem[8] = {INC, REG7, REG6, 5'bx};
     instruction_mem[9] = {HALT, 11'bx};
+  end
+  endtask
+
+
+  task alu_test_add_1;
+  begin
+  $display("alu_test_add_1");
+    instruction_mem[0] = {LBH, REG0, 8'd0};
+    instruction_mem[1] = {LBL, REG0, 8'd1};
+    instruction_mem[2] = {ADD, REG1, REG0, REG0, 2'bx};
+    instruction_mem[3] = {ADD, REG2, REG1, REG0, 2'bx};
+    instruction_mem[4] = {ADD, REG3, REG2, REG0, 2'bx};
+    instruction_mem[5] = {ADD, REG4, REG3, REG0, 2'bx};
+    instruction_mem[6] = {ADD, REG5, REG4, REG0, 2'bx};
+    instruction_mem[7] = {ADD, REG6, REG5, REG0, 2'bx};
+    instruction_mem[8] = {ADD, REG7, REG6, REG0, 2'bx};
+    instruction_mem[9] = {HALT, 11'bx};
+  end
+  endtask
+
+
+  task alu_test_add_2;
+  begin
+  $display("alu_test_add_2");
+    instruction_mem[0] = {LBH, REG0, 8'd0};
+    instruction_mem[1] = {LBL, REG0, 8'd1};
+    instruction_mem[2] = {ADD, REG1, REG0, REG0, 2'bx};
+    instruction_mem[3] = {ADD, REG2, REG1, REG1, 2'bx};
+    instruction_mem[4] = {ADD, REG3, REG2, REG2, 2'bx};
+    instruction_mem[5] = {ADD, REG4, REG3, REG3, 2'bx};
+    instruction_mem[6] = {ADD, REG5, REG4, REG4, 2'bx};
+    instruction_mem[7] = {ADD, REG6, REG5, REG5, 2'bx};
+    instruction_mem[8] = {ADD, REG7, REG6, REG6, 2'bx};
+    instruction_mem[9] = {HALT, 11'bx};
+  end
+  endtask
+
+  task alu_test_bit;
+  begin
+  $display("alu_test_bit");
+    instruction_mem[0] = {SETB, REG0, REG0, 4'd0, 1'bx};
+    instruction_mem[1] = {SETB, REG1, REG1, 4'd1, 1'bx};
+    instruction_mem[2] = {SETB, REG2, REG2, 4'd2, 1'bx};
+    instruction_mem[3] = {SETB, REG3, REG3, 4'd3, 1'bx};
+    instruction_mem[4] = {SETB, REG4, REG4, 4'd4, 1'bx};
+    instruction_mem[5] = {SETB, REG5, REG5, 4'd5, 1'bx};
+    instruction_mem[6] = {SETB, REG6, REG6, 4'd6, 1'bx};
+    instruction_mem[7] = {SETB, REG7, REG7, 4'd7, 1'bx};
+    instruction_mem[8] = {HALT, 11'bx};
+  end
+  endtask
+
+  task alu_test_mul;
+  begin
+  $display("alu_test_mul");
+    instruction_mem[0] = {LBH, REG0, 8'd0};
+    instruction_mem[1] = {LBL, REG0, 8'd10};
+    instruction_mem[2] = {LBH, REG1, 8'd0};
+    instruction_mem[3] = {LBL, REG1, 8'd32};
+    instruction_mem[4] = {MUL, REG0, REG0, REG1, 2'bx};
+    instruction_mem[5] = {HALT, 11'bx};
   end
   endtask
 

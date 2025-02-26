@@ -3,13 +3,13 @@
 Nov  8 2024
 22:36:57
 D:/Programming/MINI_RISC_PROPERLY/MINI_RISC_PROPERLY.sim/sim_1/behav/xsim/glbl.v,1724786425,verilog,,,,glbl,,,,,,,,
-D:/Programming/MINI_RISC_PROPERLY/MINI_RISC_PROPERLY.srcs/sources_1/new/ALU.v,1740212970,verilog,,D:/Programming/MINI_RISC_PROPERLY/MINI_RISC_PROPERLY.srcs/sources_1/new/control_unit.v,D:/Programming/MINI_RISC_PROPERLY/MINI_RISC_PROPERLY.srcs/sources_1/new/parameters.v,ALU,,,../../../../MINI_RISC_PROPERLY.srcs/sources_1/new,,,,,
+D:/Programming/MINI_RISC_PROPERLY/MINI_RISC_PROPERLY.srcs/sources_1/new/ALU.v,1740227093,verilog,,D:/Programming/MINI_RISC_PROPERLY/MINI_RISC_PROPERLY.srcs/sources_1/new/control_unit.v,D:/Programming/MINI_RISC_PROPERLY/MINI_RISC_PROPERLY.srcs/sources_1/new/parameters.v,ALU;Flag_Register,,,../../../../MINI_RISC_PROPERLY.srcs/sources_1/new,,,,,
 D:/Programming/MINI_RISC_PROPERLY/MINI_RISC_PROPERLY.srcs/sources_1/new/ALU_tb.v,1739629595,verilog,,,,ALU_tb,,,../../../../MINI_RISC_PROPERLY.srcs/sources_1/new,,,,,
 D:/Programming/MINI_RISC_PROPERLY/MINI_RISC_PROPERLY.srcs/sources_1/new/ALU_with_reg_tb.v,1739945454,verilog,,,D:/Programming/MINI_RISC_PROPERLY/MINI_RISC_PROPERLY.srcs/sources_1/new/parameters.v,ALU_with_reg_tb,,,../../../../MINI_RISC_PROPERLY.srcs/sources_1/new,,,,,
 D:/Programming/MINI_RISC_PROPERLY/MINI_RISC_PROPERLY.srcs/sources_1/new/control_unit.v,1740211878,verilog,,D:/Programming/MINI_RISC_PROPERLY/MINI_RISC_PROPERLY.srcs/sources_1/new/memory.v,D:/Programming/MINI_RISC_PROPERLY/MINI_RISC_PROPERLY.srcs/sources_1/new/parameters.v,control_unit,,,../../../../MINI_RISC_PROPERLY.srcs/sources_1/new,,,,,
 D:/Programming/MINI_RISC_PROPERLY/MINI_RISC_PROPERLY.srcs/sources_1/new/memory.v,1739962996,verilog,,D:/Programming/MINI_RISC_PROPERLY/MINI_RISC_PROPERLY.srcs/sources_1/new/program_counter.v,D:/Programming/MINI_RISC_PROPERLY/MINI_RISC_PROPERLY.srcs/sources_1/new/parameters.v,memory,,,../../../../MINI_RISC_PROPERLY.srcs/sources_1/new,,,,,
 D:/Programming/MINI_RISC_PROPERLY/MINI_RISC_PROPERLY.srcs/sources_1/new/memory_tb.v,1739425827,verilog,,,,memory_tb,,,,,,,,
-D:/Programming/MINI_RISC_PROPERLY/MINI_RISC_PROPERLY.srcs/sources_1/new/parameters.v,1739979296,verilog,,,,,,,,,,,,
-D:/Programming/MINI_RISC_PROPERLY/MINI_RISC_PROPERLY.srcs/sources_1/new/processor.v,1740212540,verilog,,,D:/Programming/MINI_RISC_PROPERLY/MINI_RISC_PROPERLY.srcs/sources_1/new/parameters.v,processor,,,../../../../MINI_RISC_PROPERLY.srcs/sources_1/new,,,,,
+D:/Programming/MINI_RISC_PROPERLY/MINI_RISC_PROPERLY.srcs/sources_1/new/parameters.v,1740227879,verilog,,,,,,,,,,,,
+D:/Programming/MINI_RISC_PROPERLY/MINI_RISC_PROPERLY.srcs/sources_1/new/processor.v,1740413595,verilog,,,D:/Programming/MINI_RISC_PROPERLY/MINI_RISC_PROPERLY.srcs/sources_1/new/parameters.v,processor,,,../../../../MINI_RISC_PROPERLY.srcs/sources_1/new,,,,,
 D:/Programming/MINI_RISC_PROPERLY/MINI_RISC_PROPERLY.srcs/sources_1/new/program_counter.v,1739620033,verilog,,D:/Programming/MINI_RISC_PROPERLY/MINI_RISC_PROPERLY.srcs/sources_1/new/reg_file.v,,program_counter,,,../../../../MINI_RISC_PROPERLY.srcs/sources_1/new,,,,,
 D:/Programming/MINI_RISC_PROPERLY/MINI_RISC_PROPERLY.srcs/sources_1/new/reg_file.v,1739978113,verilog,,D:/Programming/MINI_RISC_PROPERLY/MINI_RISC_PROPERLY.srcs/sources_1/new/processor.v,,reg_file,,,../../../../MINI_RISC_PROPERLY.srcs/sources_1/new,,,,,
