@@ -34,6 +34,9 @@ module processor;
   reg [10:0] branch_reg;
   reg branch_en;
 
+  reg [15:0] input_reg;
+  reg [15:0] output_reg;
+
   // alias
   wire [15:0] instruction_reg;
   wire [4:0] opcode;
@@ -165,6 +168,17 @@ module processor;
 
     if (opcode == JF) begin
       branch_en = flag[bit_pos];
+    end
+
+    if (opcode == MOVOUT) begin
+      output_reg = reg_file_out_0;
+    end
+    if (opcode == MOVIN) begin
+      reg_file_write_en_0 = 2'b11;
+      reg_file_data_in_0 = input_reg;
+    end
+    if (opcode == MOVB) begin
+      flag[4] = input_reg[bit_pos];
     end
 
   if (reg_file_write_en_0 != 2'b00 && reg_file_data_in_0 == 16'bx) $fatal;
