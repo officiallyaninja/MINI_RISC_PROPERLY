@@ -32,6 +32,7 @@ module processor;
   reg [15:0] flag;
   reg [15:0] instruction_mem[0:MEMORY_DEPTH-1];  // 11 bits to index
   reg [10:0] branch_reg;
+  reg branch_en;
 
   // alias
   wire [15:0] instruction_reg;
@@ -42,6 +43,7 @@ module processor;
   wire [2:0] reg_sel_read_0;
   wire [2:0] reg_sel_read_1;
   wire [3:0] bit_pos;
+  wire [10:0] branch_addr;
 
   // connections
   wire [15:0] reg_file_out_0;
@@ -65,12 +67,7 @@ module processor;
   assign reg_sel_read_0 = instruction_reg[7:5];
   assign reg_sel_read_1 = instruction_reg[4:2];
   assign bit_pos = instruction_reg[4:1];
-
-
-
-
-
-
+  assign branch_addr = instruction_reg[10:0];
 
 
   // control signals
@@ -88,7 +85,7 @@ module processor;
      .clk(clk),
      .rst(rst),
      .inc(1'b1),
-     .branch_en(1'b0),  // TODO
+     .branch_en(branch_en),
      .branch_addr(branch_reg),
      .current_addr(instruction_addr)
   );
@@ -132,8 +129,10 @@ module processor;
 
 
   always @(posedge clk) begin
+
    reg_file_write_en_0 = 2'b00;
    reg_file_data_in_0 = 16'bx;
+   branch_en = 0;
 
     if (opcode == HALT) $finish; // TODO: also set inc to 0
 
@@ -160,6 +159,14 @@ module processor;
       reg_file_data_in_0 = alu_result_0;
     end
 
+    if (opcode == LOADBR) begin
+      branch_reg = branch_addr;
+    end
+
+    if (opcode == JF) begin
+      branch_en = flag[bit_pos];
+    end
+
   if (reg_file_write_en_0 != 2'b00 && reg_file_data_in_0 == 16'bx) $fatal;
 
   flag = alu_flag_out;
@@ -171,7 +178,7 @@ module processor;
 
   // Test block
   initial begin
-    alu_test_mul;
+    alu_test_branch;
     reset;
   end
 
@@ -317,6 +324,21 @@ module processor;
     instruction_mem[3] = {LBL, REG1, 8'd32};
     instruction_mem[4] = {MUL, REG0, REG0, REG1, 2'bx};
     instruction_mem[5] = {HALT, 11'bx};
+  end
+  endtask
+
+  task alu_test_branch;
+  begin
+  $display("alu_test_branch");
+    instruction_mem[0] = {LBH, REG7, 8'd0};
+    instruction_mem[1] = {LBL, REG7, 8'd30};
+    instruction_mem[2] = {LOADBR, 11'd3};
+    instruction_mem[3] = {STORE, 3'bx, REG6, REG6, 2'bx};
+    instruction_mem[4] = {INC, REG6, REG6, 5'bx};
+    instruction_mem[5] = {CMP, 3'bx, REG6, REG7, 2'bx};
+    instruction_mem[6] = {CPLF, 6'bx, 4'd3, 1'bx};
+    instruction_mem[7] = {JF, 6'bx, 4'd3, 1'bx};
+    instruction_mem[8] = {HALT, 11'bx};
   end
   endtask
 
