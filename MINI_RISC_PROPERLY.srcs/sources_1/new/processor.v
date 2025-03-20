@@ -192,7 +192,8 @@ module processor;
 
   // Test block
   initial begin
-    alu_test_branch;
+    input_reg = 6;
+    IO_test_inc;
     reset;
   end
 
@@ -353,6 +354,16 @@ module processor;
     instruction_mem[6] = {CPLF, 6'bx, 4'd3, 1'bx};
     instruction_mem[7] = {JF, 6'bx, 4'd3, 1'bx};
     instruction_mem[8] = {HALT, 11'bx};
+  end
+  endtask
+
+  task IO_test_inc;
+  begin
+  $display("IO_test_inc");
+    instruction_mem[0] = {MOVIN, REG0, 8'bx}; 
+    instruction_mem[1] = {INC, REG0, REG0, 5'bx};   
+    instruction_mem[2] = {MOVOUT, 3'bx, REG0, 5'bx};
+    instruction_mem[3] = {HALT, 11'bx};
   end
   endtask
 
