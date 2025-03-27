@@ -20,22 +20,28 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module processor;
+module processor(
+  input wire clk,
+  input wire rst,
+  input wire [15:0] input_reg,
+  output reg [15:0] output_reg
+);
 
   `include "parameters.v"
   // register that gets upper mul bits
   // and the remainder of div
   localparam ALU_EXTRA_OUTPUT_REG = 3'b001; 
   // special regs
-  reg clk;
-  reg rst;
+;
+
+  reg halt = 0;
+
   reg [15:0] flag;
   reg [15:0] instruction_mem[0:MEMORY_DEPTH-1];  // 11 bits to index
   reg [10:0] branch_reg;
   reg branch_en;
 
-  reg [15:0] input_reg;
-  reg [15:0] output_reg;
+
 
   // alias
   wire [15:0] instruction_reg;
@@ -87,7 +93,7 @@ module processor;
   program_counter pc (
      .clk(clk),
      .rst(rst),
-     .inc(1'b1),
+     .inc(~halt),
      .branch_en(branch_en),
      .branch_addr(branch_reg),
      .current_addr(instruction_addr)
@@ -131,14 +137,19 @@ module processor;
    );
 
 
+
   always @(posedge clk) begin
+    if (rst) begin
+      halt = 0;
+    end
+    reg_file_write_en_0 = 2'b00;
+    reg_file_data_in_0 = 16'bx;
+    branch_en = 0;
 
-   reg_file_write_en_0 = 2'b00;
-   reg_file_data_in_0 = 16'bx;
-   branch_en = 0;
-
-    if (opcode == HALT) $finish; // TODO: also set inc to 0
-
+    if (opcode == HALT) begin
+     halt = 1;
+     $finish;
+    end
     if (opcode == LOAD ) begin
       reg_file_write_en_0 = 2'b11;
       reg_file_data_in_0 = ram_out;
@@ -186,17 +197,19 @@ module processor;
   flag = alu_flag_out;
   end
 
+/*
   initial begin
     clk = 0;
-    forever #5 clk = ~clk; end
+    forever #5 clk = ~clk;
+  end
+*/
 
   // Test block
   initial begin
-    input_reg = 6;
-    IO_test_inc;
-    reset;
+    IO_test_inc;  // Test to be run
+    //reset;
   end
-
+/*
   task reset;
     begin
     rst = 0;
@@ -207,7 +220,7 @@ module processor;
     @(posedge clk);
     end
   endtask
-
+*/
   task load_test_1;
     begin
       $display("load test 1");

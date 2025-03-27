@@ -1,3 +1,5 @@
+`timescale 1ns / 1ps
+
 module ALU (
     // input wire alu_en,
     input wire [4:0] opcode,  // from instruction register
