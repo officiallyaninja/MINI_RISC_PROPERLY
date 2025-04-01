@@ -1,0 +1,22 @@
+task fibonacci;
+begin
+$display("fibonacci");
+  instruction_mem[0] = {MOVIN, REG4, 8'bx};
+  instruction_mem[1] = {LBH, REG5, 8'd0};
+  instruction_mem[2] = {LBL, REG5, 8'd1};
+  instruction_mem[3] = {LBH, REG0, 8'd0};
+  instruction_mem[4] = {LBL, REG0, 8'd1};
+  instruction_mem[5] = {LBH, REG1, 8'd0};
+  instruction_mem[6] = {LBL, REG1, 8'd1};
+  instruction_mem[7] = {ADD, REG2, REG0, REG1, 2'bx};
+  instruction_mem[8] = {MOV, REG0, REG1, 5'bx};
+  instruction_mem[9] = {MOV, REG1, REG2, 5'bx};
+  instruction_mem[10] = {SUB, REG4, REG4, REG5, 2'bx};
+  instruction_mem[11] = {CMP, 3'bx, REG4, REG5, 2'bx};
+  instruction_mem[12] = {LOADBR, 11'd7};
+  instruction_mem[13] = {JF, 6'bx, 4'd2, 1'bx};
+  instruction_mem[14] = {MOVOUT, 3'bx, REG2, 5'bx};
+  instruction_mem[15] = {HALT, 11'bx};
+end
+endtask
+
